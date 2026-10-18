@@ -1,0 +1,5 @@
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - deployment.yaml
+# secret.yaml is applied separately and must not be committed

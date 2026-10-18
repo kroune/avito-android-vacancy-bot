@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: avito-vacancy-bot
+  namespace: avito-vacancy-bot
+  labels:
+    app: avito-vacancy-bot
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # RWO volume cannot be attached to two pods at once
+  selector:
+    matchLabels:
+      app: avito-vacancy-bot
+  template:
+    metadata:
+      labels:
+        app: avito-vacancy-bot
+    spec:
+      containers:
+        - name: bot
+          image: ghcr.io/kroune/avito-android-vacancy-bot:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: avito-vacancy-bot
+          env:
+            - name: CHECK_INTERVAL
+              value: 1h
+            - name: STATE_FILE
+              value: /data/state.json
+            - name: KEYWORDS
+              value: android
+            - name: PAGE_URL
+              value: https://career.avito.com/vacancies/?q=&action=filter&direction=razrabotka
+          volumeMounts:
+            - name: state
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: avito-vacancy-bot-state
